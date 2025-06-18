@@ -1,10 +1,9 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
-const salt = 10;
 
 exports.createUser = async (userData) => {
   try {
-    const hashedPass = await bcrypt.hash(userData.password, salt);
+    const hashedPass = await bcrypt.hash(userData.password, 10);
     const newUserData = { ...userData, password: hashedPass };
     const newUser = await User.create(newUserData);
     return {
@@ -20,6 +19,45 @@ exports.createUser = async (userData) => {
     return {
       success: false,
       message: "Error creating user",
+      error: error.message,
+    };
+  }
+};
+
+// Function for login user
+exports.loginUser = async (email, password) => {
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    // Compare the password with the hashed password stored in DB
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return {
+        success: false,
+        message: "Invalid password",
+      };
+    }
+
+    // Return user data excluding the password field
+    const { password: userPassword, ...userData } = user.toObject();
+    return {
+      success: true,
+      message: "Login successful",
+      user: userData,  // Return user details without the password
+    };
+  } catch (error) {
+    console.error("Error logging in:", error);
+    return {
+      success: false,
+      message: "Server Error",
       error: error.message,
     };
   }

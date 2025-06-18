@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 import { Link, useNavigate } from 'react-router-dom';  // Import useNavigate from React Router
+import axios from 'axios'; // Import Axios for API calls
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation (email and password required)
@@ -28,24 +29,35 @@ const Login = () => {
       return;
     }
 
-    // If all validations pass, clear error message and show success alert
+    // Clear previous errors
     setError('');
 
-    // Show SweetAlert for successful login
-    Swal.fire({
-      title: 'Logged In!',
-      text: 'You have logged in successfully!',
-      icon: 'success',
-      confirmButtonText: 'Go to Dashboard',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Redirect to Dashboard or Home page after login
-        navigate('/dashboard');
-      }
-    });
+    try {
+      // Make the POST request to the backend login API
+      const response = await axios.post('http://localhost:3000/user/login', formData);
 
-    // You can log the form data or handle backend authentication here
-    console.log('Form submitted:', formData);
+      if (response.data.success) {
+        // Show SweetAlert for successful login
+        Swal.fire({
+          title: 'Logged In!',
+          text: 'You have logged in successfully!',
+          icon: 'success',
+          confirmButtonText: 'Go to Dashboard',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Store token or user data here (e.g., in localStorage or state)
+            localStorage.setItem('token', response.data.token);  // Example: Save token
+            navigate('/dashboard'); // Redirect to Dashboard
+          }
+        });
+      } else {
+        // Handle failed login (invalid credentials)
+        setError(response.data.message || 'Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      setError('An error occurred while logging in.');
+    }
   };
 
   return (
@@ -73,7 +85,7 @@ const Login = () => {
             value={formData.email}
             onChange={handleInputChange}
             className="w-full border border-gray-600 p-1 bg-[#0d1117] text-gray-200 rounded-lg"
-            // placeholder="you@example.com"
+            placeholder="you@example.com"
             required
           />
         </div>
@@ -86,7 +98,7 @@ const Login = () => {
             value={formData.password}
             onChange={handleInputChange}
             className="w-full border border-gray-600 p-1 bg-[#0d1117] text-gray-200 rounded-lg"
-            // placeholder="Enter your password"
+            placeholder="Enter your password"
             required
           />
         </div>

@@ -1,0 +1,16 @@
+[
+  {
+    "roomName": "React Development",
+    "description": "A room dedicated to discussing React.js, sharing resources, and collaborating on React projects.",
+    "tags": ["React", "JavaScript", "Frontend", "Web Development"],
+    "author": "John Doe",
+    "maxParticipants": 10
+  },
+  {
+    "roomName": "Node.js Backend",
+    "description": "A room for Node.js enthusiasts to talk about backend development, share tips, and collaborate on Node.js projects.",
+    "tags": ["Node.js", "Backend", "JavaScript", "Web Development"],
+    "author": "Jane Smith",
+    "maxParticipants": 15
+  }
+]

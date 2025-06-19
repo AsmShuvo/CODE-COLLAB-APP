@@ -45,9 +45,14 @@ const Login = () => {
           confirmButtonText: 'Go to Dashboard',
         }).then((result) => {
           if (result.isConfirmed) {
-            // Store token or user data here (e.g., in localStorage or state)
-            localStorage.setItem('token', response.data.token);  // Example: Save token
-            navigate('/dashboard'); // Redirect to Dashboard
+            // Store user details in localStorage (without the password)
+            const { user } = response.data;
+
+            // Save user data (excluding the password) in localStorage
+            localStorage.setItem('user', JSON.stringify(user));  // Save the user data
+
+            // Redirect to the homepage or dashboard
+            navigate('/');
           }
         });
       } else {
@@ -59,6 +64,7 @@ const Login = () => {
       setError('An error occurred while logging in.');
     }
   };
+
 
   return (
     <div className="bg-[#0d1117] text-gray-200 min-h-screen flex justify-center py-10 items-center flex-col">

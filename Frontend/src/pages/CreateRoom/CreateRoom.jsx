@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 const CreateRoom = () => {
-  // State to handle form data
   const [formData, setFormData] = useState({
     roomName: "",
     description: "",
@@ -9,8 +10,8 @@ const CreateRoom = () => {
     maxParticipants: 3,
   });
 
-  // State to handle error messages
   const [error, setError] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate for redirection
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -21,11 +22,11 @@ const CreateRoom = () => {
     });
   };
 
-  // Validate and handle form submission
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation
+    // Basic validation
     if (!formData.roomName || !formData.description || !formData.tags) {
       setError("All fields are required!");
       return;
@@ -38,9 +39,31 @@ const CreateRoom = () => {
 
     setError(""); // Clear error
 
-    // Submit the form (this could be a function to add the room to the database)
-    console.log("Room Created:", formData);
-    // You can redirect or reset the form here
+    // Get user data from localStorage
+    const userData = JSON.parse(localStorage.getItem("user"));
+
+    if (!userData || !userData._id) {
+      setError("User not logged in");
+      return;
+    }
+
+    const roomId = userData._id; // Use the user's ID as the room ID
+
+    // Save room data to localStorage (optional, if you want to persist it)
+    localStorage.setItem("roomId", roomId);
+
+    // Show SweetAlert for success
+    Swal.fire({
+      title: "Room Created!",
+      text: "Your room has been created successfully!",
+      icon: "success",
+      confirmButtonText: "Go to Room",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Redirect to the newly created room with the roomId
+        navigate(`/room/${roomId}`);
+      }
+    });
   };
 
   return (

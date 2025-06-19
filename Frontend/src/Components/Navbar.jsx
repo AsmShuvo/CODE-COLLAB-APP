@@ -1,6 +1,26 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
 
 const Navbar = () => {
+  const [user, setUser] = useState(null); // State to store user data
+  const navigate = useNavigate(); // Initialize useNavigate for redirection
+
+  // Recheck localStorage whenever the component is rendered
+  useEffect(() => {
+    // Check if user data is in localStorage
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (storedUser) {
+      setUser(storedUser); // Set user data to state if user is logged in
+    }
+  }, []); // Empty dependency array means this effect runs once on mount
+
+  const handleLogout = () => {
+    // Clear user data from localStorage and update the navbar state
+    localStorage.removeItem("user");
+    setUser(null); // Update the state to remove user info
+    navigate("/login"); // Redirect to login page
+  };
+
   return (
     <div>
       <div className="navbar bg-blue-900 text-white shadow-md sticky top-0 z-10">
@@ -63,38 +83,35 @@ const Navbar = () => {
 
         {/* Navbar End */}
         <div className="navbar-end">
-          {/* Profile Dropdown */}
-          <div className="dropdown dropdown-end">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost btn-circle avatar hover:bg-blue-700 transition duration-300"
-            >
-              <div className="w-12 rounded-full">
-                <img
-                  alt="User Avatar"
-                  src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                />
+          {/* If user is logged in, show avatar; if not, show login button */}
+          {user ? (
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar hover:bg-blue-700 transition duration-300">
+                <div className="w-12 rounded-full">
+                  <img src={user.profilePicture} alt="Profile Avatar" />
+                </div>
               </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-sm dropdown-content bg-blue-800 rounded-box z-10 mt-3 w-52 p-2 shadow-lg"
+              >
+                <li>
+                  <Link to="/profile" className="justify-between">
+                    Profile
+                    <span className="badge badge-secondary">New</span>
+                  </Link>
+                </li>
+                <li>
+                  <a>Settings</a>
+                </li>
+                <li>
+                  <button onClick={handleLogout}>Logout</button>
+                </li>
+              </ul>
             </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-blue-800 rounded-box z-10 mt-3 w-52 p-2 shadow-lg"
-            >
-              <li>
-                <a className="justify-between">
-                  Profile
-                  <span className="badge badge-secondary">New</span>
-                </a>
-              </li>
-              <li>
-                <a>Settings</a>
-              </li>
-              <li>
-                <a>Logout</a>
-              </li>
-            </ul>
-          </div>
+          ) : (
+            <Link to="/login" className="btn btn-ghost">Login</Link>
+          )}
         </div>
       </div>
     </div>

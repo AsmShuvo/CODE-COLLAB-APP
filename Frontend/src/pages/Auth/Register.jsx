@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate from React Router
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios"; // Import Axios
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ const Register = () => {
   });
 
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,17 +23,15 @@ const Register = () => {
   };
 
   const validateEmail = (email) => {
-    // Email must contain '@gmail.com'
     return email.includes("@gmail.com");
   };
 
   const validatePassword = (password) => {
-    // Password must be at least 6 characters long, containing at least 1 letter and 1 number
     const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
     return regex.test(password);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Email validation
@@ -55,20 +54,37 @@ const Register = () => {
       return;
     }
 
-    // If all validations pass, clear error message and show success alert
+    // Clear error message if validations pass
     setError("");
 
-    Swal.fire({
-      icon: "success",
-      title: "Registration Successful",
-      showConfirmButton: false,
-      timer: 1500,
-    }).then((result) => {
-      navigate("/login");
-    });
+    try {
+      // Send data to backend for user registration
+      const response = await axios.post("http://localhost:3000/user/register", formData);
 
-    // If needed, log formData or send it to the backend here
-    console.log("Form submitted:", formData);
+      if (response.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Registration Successful",
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          navigate("/login"); // Redirect to login page on success
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Registration Failed",
+          text: response.data.message || "An error occurred.",
+        });
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while registering the user.",
+      });
+    }
   };
 
   return (

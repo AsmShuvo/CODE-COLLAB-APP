@@ -6,6 +6,7 @@ import Error from "../Components/Error";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
 import CreateRoom from "../pages/CreateRoom/CreateRoom";
+import Room from "../pages/CreateRoom/CurrentRoom/Room";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path:"/create-room",
         element:<CreateRoom/>
+      },
+      {
+        path:"/room/:roomId",
+        element:<Room/>
       }
     ],
   },

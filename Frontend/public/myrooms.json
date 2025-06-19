@@ -1,0 +1,18 @@
+[
+  {
+    "roomName": "API with Node/Express",
+    "description": "A room for discussing API development using Node and Express.",
+    "tags": ["Node", "Backend", "API", "Express", "MongoDB"],
+    "author": "AsmShuvo",
+    "maxParticipants": 3,
+    "createdAt": "2025-06-16T00:00:00Z"
+  },
+  {
+    "roomName": "React Development",
+    "description": "A room for React development discussions and collaborations.",
+    "tags": ["React", "JavaScript", "Frontend", "Web Development"],
+    "author": "John Doe",
+    "maxParticipants": 5,
+    "createdAt": "2025-06-15T00:00:00Z"
+  }
+]

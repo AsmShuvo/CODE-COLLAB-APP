@@ -13,6 +13,7 @@ exports.createUser = async (userData) => {
       name: newUser.name,
       email: newUser.email,
       profilePicture: newUser.profilePicture,
+      githubProfile: newUser.githubProfile,
     };
   } catch (error) {
     console.log("Error creating user: ", error);

@@ -9,6 +9,7 @@ const Register = () => {
     username: "",
     password: "",
     confirmPassword: "",
+    githubProfile: "", // Added GitHub Profile field
   });
 
   const [error, setError] = useState("");
@@ -148,6 +149,19 @@ const Register = () => {
             value={formData.confirmPassword}
             onChange={handleInputChange}
             className="w-full border border-gray-600 p-1 bg-[#0d1117] text-gray-200 rounded-lg"
+            required
+          />
+        </div>
+
+        {/* GitHub Profile Field */}
+        <div className="mb-4">
+          <label className="block mb-2 text-sm">GitHub Profile Link </label>
+          <input
+            type="text"
+            name="githubProfile"
+            value={formData.githubProfile}
+            onChange={handleInputChange}
+            className="w-full border border-gray-700 p-1 bg-[#0d1117] text-gray-200 rounded-lg" 
             required
           />
         </div>

@@ -11,11 +11,13 @@ const PORT = process.env.PORT || 3000;
 
 // routes
 const userRoute = require("./routes/user.route");
+const roomRoute = require("./routes/room.routes");
 
 // db connection
 connectDB();
 
 app.use("/user", userRoute);
+app.use("/room", roomRoute);
 
 app.get("/", (req, res) => {
   res.send("CodeCollab Server is on...");

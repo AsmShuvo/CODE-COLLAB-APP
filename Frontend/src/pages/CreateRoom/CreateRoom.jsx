@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
+import { MdOutlineDone } from "react-icons/md";
+import axios from "axios"; // Import Axios for HTTP requests
 
 const CreateRoom = () => {
   const [formData, setFormData] = useState({
@@ -8,12 +10,23 @@ const CreateRoom = () => {
     description: "",
     tags: "",
     maxParticipants: 3,
+    githubRepo: "", // GitHub repo field
+    repoVisibility: "public", // Default visibility to public
   });
 
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Initialize useNavigate for redirection
+  const navigate = useNavigate();
 
-  // Handle input change
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (userData && userData.username) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        roomName: `${userData.username}'s room`,
+      }));
+    }
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -22,11 +35,9 @@ const CreateRoom = () => {
     });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!formData.roomName || !formData.description || !formData.tags) {
       setError("All fields are required!");
       return;
@@ -37,9 +48,8 @@ const CreateRoom = () => {
       return;
     }
 
-    setError(""); // Clear error
+    setError(""); 
 
-    // Get user data from localStorage
     const userData = JSON.parse(localStorage.getItem("user"));
 
     if (!userData || !userData._id) {
@@ -47,23 +57,45 @@ const CreateRoom = () => {
       return;
     }
 
-    const roomId = userData._id; // Use the user's ID as the room ID
+    const roomData = {
+      roomName: formData.roomName,
+      description: formData.description,
+      tags: formData.tags.split(","), // Convert comma-separated tags into an array
+      maxParticipants: formData.maxParticipants,
+      ownerId: userData._id, // Set the user as the room owner
+      githubRepo: formData.repoVisibility === "public" ? formData.githubRepo : "", // If public, include GitHub repo; if private, don't include
+      repoVisibility: formData.repoVisibility === "public", // Store as boolean (true for public, false for private)
+    };
 
-    // Save room data to localStorage (optional, if you want to persist it)
-    localStorage.setItem("roomId", roomId);
+    try {
+      const response = await axios.post("http://localhost:3000/room/create-room", roomData);
 
-    // Show SweetAlert for success
-    Swal.fire({
-      title: "Room Created!",
-      text: "Your room has been created successfully!",
-      icon: "success",
-      confirmButtonText: "Go to Room",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Redirect to the newly created room with the roomId
-        navigate(`/room/${roomId}`);
+      if (response.data.success) {
+        Swal.fire({
+          title: "Room Created!",
+          text: "Your room has been created successfully!",
+          icon: "success",
+          confirmButtonText: "Go to Room",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate(`/room/${response.data.roomId}`);
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Room Creation Failed",
+          text: response.data.message || "An error occurred.",
+        });
       }
-    });
+    } catch (error) {
+      console.error("Error creating room:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while creating the room.",
+      });
+    }
   };
 
   return (
@@ -73,7 +105,6 @@ const CreateRoom = () => {
           Create a New Room
         </h2>
 
-        {/* Display error messages */}
         {error && (
           <div className="text-red-500 text-center mb-4">
             <p>{error}</p>
@@ -81,7 +112,6 @@ const CreateRoom = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Room Name */}
           <div className="mb-4">
             <label className="block text-sm text-gray-300 mb-2">Room Name</label>
             <input
@@ -95,7 +125,6 @@ const CreateRoom = () => {
             />
           </div>
 
-          {/* Description */}
           <div className="mb-4">
             <label className="block text-sm text-gray-300 mb-2">Description</label>
             <textarea
@@ -109,7 +138,6 @@ const CreateRoom = () => {
             ></textarea>
           </div>
 
-          {/* Tags */}
           <div className="mb-4">
             <label className="block text-sm text-gray-300 mb-2">Tags (comma separated)</label>
             <input
@@ -123,7 +151,6 @@ const CreateRoom = () => {
             />
           </div>
 
-          {/* Max Participants */}
           <div className="mb-6">
             <label className="block text-sm text-gray-300 mb-2">Max Participants</label>
             <input
@@ -138,13 +165,39 @@ const CreateRoom = () => {
             />
           </div>
 
-          {/* Submit Button */}
+          <div className="mb-4">
+            <label className="block text-sm text-gray-300 mb-2">GitHub Repository URL</label>
+            <input
+              type="text"
+              name="githubRepo"
+              value={formData.githubRepo}
+              onChange={handleInputChange}
+              className="w-full p-3 bg-[#2c3038] border border-gray-700 text-gray-200 rounded-md"
+              placeholder="Enter GitHub Repository URL"
+              required={formData.repoVisibility === "public"}
+              disabled={formData.repoVisibility === "private"}
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm text-gray-300 mb-2">Repository Visibility</label>
+            <select
+              name="repoVisibility"
+              value={formData.repoVisibility}
+              onChange={handleInputChange}
+              className="w-full p-3 bg-[#2c3038] border border-gray-700 text-gray-200 rounded-md"
+            >
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select>
+          </div>
+
           <div className="flex justify-center">
             <button
               type="submit"
-              className="bg-blue-600 text-white py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
+              className="bg-blue-600 flex items-center justify-center gap-1 text-white py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-300"
             >
-              Create Room
+              Create Room <MdOutlineDone />
             </button>
           </div>
         </form>

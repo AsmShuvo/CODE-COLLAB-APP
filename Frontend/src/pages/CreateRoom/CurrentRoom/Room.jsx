@@ -1,24 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import axios from "axios";
 
 const Room = () => {
-  const { roomId } = useParams(); // Get the roomId from the URL
+  const { roomId } = useParams();
   const [userData, setUserData] = useState(null);
-  const meetingRef = useRef(null); // Reference to the meeting container
+  const meetingRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user data from localStorage
     const data = JSON.parse(localStorage.getItem("user"));
     if (data) {
-      setUserData(data); // Set user data if available
+      setUserData(data);
     }
   }, []);
 
   // Check device permissions before starting the meeting
   const checkDevicePermissions = async () => {
     try {
-      // Request access to media devices
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       console.log("Devices authorized", stream);
       return true;
@@ -42,28 +42,43 @@ const Room = () => {
       return; // Don't proceed if permission is not granted
     }
 
-    // App credentials for ZegoCloud (replace with your actual credentials)
     const appID = 447319404;
     const serverSecret = "4bfc2577211a2dcb7f3d8f9bb2223de3";
 
-    // Generate the Zego token for the meeting
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
       appID,
       serverSecret,
-      roomId, // Room ID is unique for the meeting (same for all users)
-      Date.now().toString(), // User-specific ID (you can also use userId here)
-      userData.username // User's username
+      roomId, 
+      Date.now().toString(), 
+      userData.username
     );
 
     const zp = ZegoUIKitPrebuilt.create(kitToken);
 
     if (meetingRef.current) {
       zp.joinRoom({
-        container: meetingRef.current, 
+        container: meetingRef.current,
         scenario: {
-          mode: ZegoUIKitPrebuilt.VideoConference, 
+          mode: ZegoUIKitPrebuilt.VideoConference,
         },
       });
+    }
+  };
+
+  // Function to end the meeting and delete the room from the database
+  const endMeeting = async () => {
+    try {
+      // Call the backend API to delete the room (you can change the URL as needed)
+      const response = await axios.delete(`http://localhost:3000/room/delete-room/${roomId}`);
+      
+      if (response.data.success) {
+        console.log("Meeting ended and room deleted from database");
+        navigate("/"); // Redirect to the homepage or another page
+      } else {
+        console.log("Failed to delete the room:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error ending the meeting:", error);
     }
   };
 
@@ -75,16 +90,25 @@ const Room = () => {
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-[#0d1117] text-gray-200 py-10">
-      <div className="bg-[#1a1f27] p-2 rounded-lg shadow-xl w-full h-96===">
+      <div className="bg-[#1a1f27] p-2 rounded-lg shadow-xl w-full h-96">
         <h2 className="text-3xl font-semibold text-center text-gray-200 mb-6">
           Room: {roomId}
         </h2>
 
-        {/* Display the meeting container */}
         <div
           ref={meetingRef}
-          className="w-full h-[80vh] bg-gray-800 rounded-lg" // Ensure it takes full height, 70% of viewport height
+          className="w-full h-[80vh] bg-gray-800 rounded-lg"
         ></div>
+
+        {/* Button to end the meeting */}
+        <div className="text-center mt-6">
+          <button
+            onClick={endMeeting}
+            className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300"
+          >
+            End Meeting
+          </button>
+        </div>
 
         {/* Show a message if user data is missing */}
         {!userData && (
